@@ -1,0 +1,80 @@
+\ Snake: run snake.run:, steer with joystick, eat food, click stops.
+snake.body is cells(96)
+snake.head is 2
+snake.len is 3
+snake.dx is 1
+snake.dy is 0
+snake.food is 0
+
+to snake.pos with x, y [ y * grid.width + x ]
+to snake.x with pos [ pos % grid.width ]
+to snake.y with pos [ pos / grid.width ]
+to snake.onBody? with pos [
+  here hit is false;
+  repeat snake.len as i [
+    here index is math.wrap: snake.head - i, 96;
+    here bodyPos is snake.body[index];
+    when bodyPos == pos [ set hit to true ]
+  ];
+  hit
+]
+to snake.placeFood [
+  set snake.food to random.below: 96;
+  while snake.onBody?: snake.food [
+    set snake.food to random.below: 96
+  ]
+]
+
+to snake.reset [
+  set snake.head to 2;
+  set snake.len to 3; set snake.dx to 1; set snake.dy to 0;
+  set snake.body[0] to snake.pos: 3, 3;
+  set snake.body[1] to snake.pos: 4, 3;
+  set snake.body[2] to snake.pos: 5, 3;
+  snake.placeFood:
+]
+
+to snake.setup [ matrix.init:; matrix.brightness!: 1; random.seedFromMillis!:; snake.reset: ]
+
+to snake.readInput [
+  when joy.up?: [ when snake.dy != 1 [ set snake.dx to 0; set snake.dy to -1 ] ];
+  when joy.down?: [ when snake.dy != -1 [ set snake.dx to 0; set snake.dy to 1 ] ];
+  when joy.left?: [ when snake.dx != 1 [ set snake.dx to -1; set snake.dy to 0 ] ];
+  when joy.right?: [ when snake.dx != -1 [ set snake.dx to 1; set snake.dy to 0 ] ]
+]
+
+to snake.update [
+  snake.readInput:;
+  here headPos is snake.body[snake.head];
+  here nx is math.wrap: (snake.x: headPos) + snake.dx, grid.width;
+  here ny is math.wrap: (snake.y: headPos) + snake.dy, grid.height;
+  here nextPos is snake.pos: nx, ny;
+  if snake.onBody?: nextPos [
+    grid.clear:;
+    grid.show:;
+    ms: 500;
+    snake.reset:
+  ] else [
+    here grow is nextPos == snake.food;
+    set snake.head to math.wrap: snake.head + 1, 96;
+    set snake.body[snake.head] to nextPos;
+    when grow [
+      set snake.len to math.min: snake.len + 1, 96;
+      snake.placeFood:
+    ]
+  ]
+]
+
+to snake.draw [
+  grid.clear:;
+  repeat snake.len as i [
+    here index is math.wrap: snake.head - i, 96;
+    here pos is snake.body[index];
+    grid.set: (snake.x: pos), (snake.y: pos), true
+  ];
+  grid.set: (snake.x: snake.food), (snake.y: snake.food), true;
+  grid.show:
+]
+
+to snake.frame [ snake.update:; snake.draw:; ms: (math.map: knob.left:, 0, 100, 280, 60) ]
+to snake.run [ snake.setup:; while (not joy.click?:) [ snake.frame: ] ]

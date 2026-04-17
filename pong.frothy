@@ -1,0 +1,21 @@
+\ Pong is already on the board; this hack makes paddles taller, speeds the ball, and adds a dotted center line.
+\ Run pong.run:. Try show @demo.pong.advanceBall and show @demo.pong.draw to find more hacks.
+
+demo.pong.paddleHeight is 5
+demo.pong.maxPaddleTop is grid.height - demo.pong.paddleHeight
+demo.pong.ballStepMs is 90
+
+to demo.pong.draw [
+  grid.clear:;
+  repeat grid.height as y [
+    when y % 2 == 0 [
+      grid.set: grid.width / 2, y, true
+    ]
+  ];
+  matrix.fillRect: 0, demo.pong.left, 1, demo.pong.paddleHeight, true;
+  matrix.fillRect:
+    (grid.width - 1), demo.pong.right, 1, demo.pong.paddleHeight, true;
+  grid.set: demo.pong.ballX, demo.pong.ballY, true
+]
+
+to pong.run [ demo.pong.setup:; demo.pong.run: ]

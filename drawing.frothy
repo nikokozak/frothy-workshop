@@ -1,0 +1,29 @@
+\ Drawing toy: move with the joystick, leave a trail, run with draw.run:
+draw.x is 5
+draw.y is 3
+draw.blink is true
+
+to draw.setup [
+  matrix.init:;
+  matrix.brightness!: 1;
+  grid.clear:;
+  grid.set: draw.x, draw.y, true;
+  grid.show:
+]
+
+to draw.update [
+  grid.set: draw.x, draw.y, true;
+  when joy.left?: [ set draw.x to math.wrap: draw.x - 1, grid.width ];
+  when joy.right?: [ set draw.x to math.wrap: draw.x + 1, grid.width ];
+  when joy.up?: [ set draw.y to math.wrap: draw.y - 1, grid.height ];
+  when joy.down?: [ set draw.y to math.wrap: draw.y + 1, grid.height ];
+  set draw.blink to not draw.blink
+]
+
+to draw.draw [
+  grid.set: draw.x, draw.y, draw.blink;
+  grid.show:
+]
+
+to draw.frame [ draw.update:; draw.draw:; ms: 80 ]
+to draw.run [ draw.setup:; while (not joy.click?:) [ draw.frame: ] ]

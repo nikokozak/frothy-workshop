@@ -1,0 +1,49 @@
+\ Life garden: run life.run:, click toggles a paint cell and switches paint/run.
+life.x is 5
+life.y is 3
+life.mode is 0
+life.click is false
+life.blink is true
+
+to life.setup [
+  matrix.init:;
+  matrix.brightness!: 1;
+  grid.clear:;
+  grid.show:
+]
+
+to life.update [
+  here pressed is joy.click?:;
+  when pressed and (not life.click) [
+    when life.mode == 0 [ grid.toggle: life.x, life.y ];
+    set life.mode to 1 - life.mode
+  ];
+  set life.click to pressed;
+  cond [
+    when life.mode == 0 [
+      when joy.left?: [ set life.x to math.wrap: life.x - 1, grid.width ];
+      when joy.right?: [ set life.x to math.wrap: life.x + 1, grid.width ];
+      when joy.up?: [ set life.y to math.wrap: life.y - 1, grid.height ];
+      when joy.down?: [ set life.y to math.wrap: life.y + 1, grid.height ]
+    ]
+    else [ tm1629.lifeStep: ]
+  ];
+  set life.blink to not life.blink
+]
+
+to life.draw [
+  when life.mode == 0 [
+    when life.blink [ grid.toggle: life.x, life.y ]
+  ];
+  grid.show:;
+  when life.mode == 0 [
+    when life.blink [ grid.toggle: life.x, life.y ]
+  ]
+]
+
+to life.frame [
+  life.update:;
+  life.draw:;
+  if life.mode == 1 [ ms: (math.map: knob.left:, 0, 100, 600, 60) ] else [ ms: 80 ]
+]
+to life.run [ life.setup:; while true [ life.frame: ] ]
